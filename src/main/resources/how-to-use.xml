@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" default-autowire="byName">
+
+	<!-- ===================================== -->
+	<!-- 通用ID配置 -->
+	<!-- ===================================== -->
+	<bean id="parentMutexTicket" abstract="true">
+		<property name="ticketDAO">
+			<bean class="com.atom.core.ticket.support.DefaultTicketDAO">
+				<property name="dataSource">
+					<bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+						<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+						<property name="url" value="jdbc:mysql://127.0.01:3306/mplat?useUnicode=true&amp;characterEncoding=UTF8" />
+						<property name="username" value="mplat" />
+						<property name="password" value="mplat" />
+						<property name="minIdle" value="1" />
+						<property name="maxIdle" value="2" />
+						<property name="maxActive" value="50" />
+					</bean>
+				</property>
+				<property name="retryTimes" value="50" />
+				<property name="step" value="100" />
+				<property name="tableName" value="adm_mutex_ticket" />
+				<property name="nameColumnName" value="name" />
+				<property name="valueColumnName" value="value" />
+				<property name="stampColumnName" value="stamp" />
+			</bean>
+		</property>
+	</bean>
+
+	<!-- ===================================== -->
+	<!-- 用户ID配置 -->
+	<!-- ===================================== -->
+	<bean id="userInfoTicket" class="com.atom.core.ticket.support.DefaultMutexTicket" parent="parentMutexTicket">
+		<property name="name" value="USER-INFO-ID" />
+	</bean>
+
+</beans>
