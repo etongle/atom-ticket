@@ -2,7 +2,7 @@
  * aBoy.com Inc.
  * Copyright (c) 2004-2012 All Rights Reserved.
  */
-package com.atom.core.ticket.support;
+package com.github.obullxl.ticket.support;
 
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -10,10 +10,10 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 
-import com.atom.core.ticket.AtomicTicket;
-import com.atom.core.ticket.MutexTicket;
-import com.atom.core.ticket.TicketDAO;
-import com.atom.core.ticket.TicketException;
+import com.github.obullxl.ticket.AtomicTicket;
+import com.github.obullxl.ticket.MutexTicket;
+import com.github.obullxl.ticket.TicketDAO;
+import com.github.obullxl.ticket.TicketException;
 
 /**
  * 票据默认实现
@@ -40,7 +40,7 @@ public class DefaultMutexTicket implements MutexTicket, InitializingBean {
     }
 
     /**
-     * @see com.atom.core.ticket.MutexTicket#nextValue()
+     * @see com.github.obullxl.ticket.MutexTicket#nextValue()
      */
     public long nextValue() throws TicketException {
         if (this.currentTicket == null) {

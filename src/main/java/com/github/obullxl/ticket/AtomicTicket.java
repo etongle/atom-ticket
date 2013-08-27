@@ -2,7 +2,7 @@
  * aBoy.com Inc.
  * Copyright (c) 2004-2012 All Rights Reserved.
  */
-package com.atom.core.ticket;
+package com.github.obullxl.ticket;
 
 import java.util.concurrent.atomic.AtomicLong;
 

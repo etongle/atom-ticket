@@ -2,7 +2,7 @@
  * aBoy.com Inc.
  * Copyright (c) 2004-2012 All Rights Reserved.
  */
-package com.atom.core.ticket.support;
+package com.github.obullxl.ticket.support;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,9 +17,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.util.Assert;
 
-import com.atom.core.ticket.AtomicTicket;
-import com.atom.core.ticket.TicketDAO;
-import com.atom.core.ticket.TicketException;
+import com.github.obullxl.ticket.AtomicTicket;
+import com.github.obullxl.ticket.TicketDAO;
+import com.github.obullxl.ticket.TicketException;
 
 /**
  * 票据DAO默认实现
@@ -74,7 +74,7 @@ public class DefaultTicketDAO implements TicketDAO, InitializingBean {
     }
 
     /**
-     * @see com.atom.core.ticket.TicketDAO#nextRange(java.lang.String)
+     * @see com.github.obullxl.ticket.TicketDAO#nextRange(java.lang.String)
      */
     public AtomicTicket nextRange(String name) throws TicketException {
         if (name == null) {
