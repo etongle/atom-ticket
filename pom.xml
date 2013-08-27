@@ -28,16 +28,6 @@
 
 	<dependencies>
 		<!-- ======================================== -->
-		<!-- SpringMVC相关依赖 -->
-		<!-- ======================================== -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-jdbc</artifactId>
-			<version>3.1.2.RELEASE</version>
-			<scope>provided</scope>
-		</dependency>
-
-		<!-- ======================================== -->
 		<!-- JDBC数据库依赖 -->
 		<!-- ======================================== -->
 		<dependency>
@@ -51,6 +41,15 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.16</version>
 			<scope>test</scope>
+		</dependency>
+
+		<!-- ======================================== -->
+		<!-- 日志系统相关依赖 -->
+		<!-- ======================================== -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.0.13</version>
 		</dependency>
 
 		<!-- ======================================== -->
@@ -155,28 +154,8 @@
 					<downloadSources>true</downloadSources>
 				</configuration>
 			</plugin>
-			<!--
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
-				<configuration>
-					<quiet>true</quiet>
-					<nonavbar>true</nonavbar>
-					<notree>true</notree>
-					<nocomment>true</nocomment>
-					<nohelp>true</nohelp>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-			-->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-javadoc-plugin</artifactId> <version>2.9.1</version> <configuration> <quiet>true</quiet> <nonavbar>true</nonavbar> <notree>true</notree> <nocomment>true</nocomment> <nohelp>true</nohelp> </configuration> <executions> <execution> 
+				<id>attach-javadocs</id> <goals> <goal>jar</goal> </goals> </execution> </executions> </plugin> -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-gpg-plugin</artifactId>

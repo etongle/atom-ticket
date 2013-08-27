@@ -13,13 +13,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.jdbc.support.JdbcUtils;
-import org.springframework.util.Assert;
+import org.apache.commons.lang.Validate;
 
-import com.github.obullxl.ticket.AtomicTicket;
-import com.github.obullxl.ticket.TicketDAO;
-import com.github.obullxl.ticket.TicketException;
+import com.github.obullxl.ticket.api.AtomicTicket;
+import com.github.obullxl.ticket.api.TicketDAO;
+import com.github.obullxl.ticket.api.TicketException;
+import com.github.obullxl.ticket.utils.DBUtils;
 
 /**
  * 票据DAO默认实现
@@ -27,54 +26,54 @@ import com.github.obullxl.ticket.TicketException;
  * @author obullxl@gmail.com
  * @version $Id: DefaultTicketDAO.java, 2012-10-19 下午9:56:05 Exp $
  */
-public class DefaultTicketDAO implements TicketDAO, InitializingBean {
-    private static final int     MIN_STEP              = 1;
-    private static final int     MAX_STEP              = 100000;
-    private static final int     DEFAULT_STEP          = 1000;
-    private static final int     DEFAULT_RETRY_TIMES   = 150;
+public class DefaultTicketDAO implements TicketDAO {
+    private static final int    MIN_STEP              = 1;
+    private static final int    MAX_STEP              = 100000;
+    private static final int    DEFAULT_STEP          = 1000;
+    private static final int    DEFAULT_RETRY_TIMES   = 150;
 
-    private static final String  DEFAULT_TABLE_NAME    = "adm_mutex_ticket";
-    private static final String  DEFAULT_NAME_CN_NAME  = "name";
-    private static final String  DEFAULT_VALUE_CN_NAME = "value";
-    private static final String  DEFAULT_STAMP_CN_NAME = "stamp";
+    private static final String DEFAULT_TABLE_NAME    = "adm_mutex_ticket";
+    private static final String DEFAULT_NAME_CN_NAME  = "name";
+    private static final String DEFAULT_VALUE_CN_NAME = "value";
+    private static final String DEFAULT_STAMP_CN_NAME = "stamp";
 
-    private static final long    DELTA                 = 100000000L;
+    private static final long   DELTA                 = 100000000L;
 
-    private DataSource           dataSource;
+    private DataSource          dataSource;
 
     /** 重试次数 */
-    private int                  retryTimes            = DEFAULT_RETRY_TIMES;
+    private int                 retryTimes            = DEFAULT_RETRY_TIMES;
 
     /** 步长 */
-    private int                  step                  = DEFAULT_STEP;
+    private int                 step                  = DEFAULT_STEP;
 
     /** 序列所在的表名 */
-    private String               tableName             = DEFAULT_TABLE_NAME;
+    private String              tableName             = DEFAULT_TABLE_NAME;
 
     /** 存储序列名称的列名 */
-    private String               nameColumnName        = DEFAULT_NAME_CN_NAME;
+    private String              nameColumnName        = DEFAULT_NAME_CN_NAME;
 
     /** 存储序列值的列名 */
-    private String               valueColumnName       = DEFAULT_VALUE_CN_NAME;
+    private String              valueColumnName       = DEFAULT_VALUE_CN_NAME;
 
     /** 存储序列最后更新时间的列名 */
-    private String               stampColumnName       = DEFAULT_STAMP_CN_NAME;
+    private String              stampColumnName       = DEFAULT_STAMP_CN_NAME;
 
-    private final Lock           selectLock            = new ReentrantLock();
-    private volatile String      selectSQL;
+    private final Lock          selectLock            = new ReentrantLock();
+    private volatile String     selectSQL;
 
-    private final Lock           updateLock            = new ReentrantLock();
-    private volatile String      updateSQL;
+    private final Lock          updateLock            = new ReentrantLock();
+    private volatile String     updateSQL;
 
     /**
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     * 初始化
      */
-    public void afterPropertiesSet() {
-        Assert.notNull(this.dataSource, "数据源注入失败！");
+    public void init() {
+        Validate.notNull(this.dataSource, "数据源注入失败！");
     }
 
     /**
-     * @see com.github.obullxl.ticket.TicketDAO#nextRange(java.lang.String)
+     * @see com.github.obullxl.ticket.api.TicketDAO#nextRange(java.lang.String)
      */
     public AtomicTicket nextRange(String name) throws TicketException {
         if (name == null) {
@@ -117,9 +116,9 @@ public class DefaultTicketDAO implements TicketDAO, InitializingBean {
             } catch (SQLException e) {
                 throw new TicketException(e);
             } finally {
-                JdbcUtils.closeResultSet(rs);
-                JdbcUtils.closeStatement(pstmt);
-                JdbcUtils.closeConnection(conn);
+                DBUtils.closeResultSet(rs);
+                DBUtils.closeStatement(pstmt);
+                DBUtils.closeConnection(conn);
             }
 
             try {
@@ -139,8 +138,8 @@ public class DefaultTicketDAO implements TicketDAO, InitializingBean {
             } catch (SQLException e) {
                 throw new TicketException(e);
             } finally {
-                JdbcUtils.closeStatement(pstmt);
-                JdbcUtils.closeConnection(conn);
+                DBUtils.closeStatement(pstmt);
+                DBUtils.closeConnection(conn);
             }
         }
 
