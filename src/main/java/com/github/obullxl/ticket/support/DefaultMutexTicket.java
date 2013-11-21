@@ -7,8 +7,7 @@ package com.github.obullxl.ticket.support;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.util.Assert;
+import org.apache.commons.lang.Validate;
 
 import com.github.obullxl.ticket.AtomicTicket;
 import com.github.obullxl.ticket.MutexTicket;
@@ -21,22 +20,24 @@ import com.github.obullxl.ticket.TicketException;
  * @author obullxl@gmail.com
  * @version $Id: DefaultMutexTicket.java, 2012-10-19 下午9:50:27 Exp $
  */
-public class DefaultMutexTicket implements MutexTicket, InitializingBean {
+public class DefaultMutexTicket implements MutexTicket {
     private final Lock            lock = new ReentrantLock();
 
     /** 序列名称 */
     private String                name;
 
+    /** 数据查询DAO */
     private TicketDAO             ticketDAO;
 
+    /** 当前票据区间 */
     private volatile AtomicTicket currentTicket;
 
     /**
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     * 初始化
      */
-    public void afterPropertiesSet() {
-        Assert.notNull(this.name, "票据名称注入失败！");
-        Assert.notNull(this.ticketDAO, "接口[TicketDAO]注入失败！");
+    public void init() {
+        Validate.notNull(this.name, "票据名称注入失败！");
+        Validate.notNull(this.ticketDAO, "接口[TicketDAO]注入失败！");
     }
 
     /**
