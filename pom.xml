@@ -28,6 +28,16 @@
 
 	<dependencies>
 		<!-- ======================================== -->
+		<!-- 项目相关依赖 -->
+		<!-- ======================================== -->
+		<dependency>
+			<groupId>com.github.obullxl</groupId>
+			<artifactId>atom-lang</artifactId>
+			<version>1.0.1</version>
+			<scope>provided</scope>
+		</dependency>
+
+		<!-- ======================================== -->
 		<!-- JDBC数据库依赖 -->
 		<!-- ======================================== -->
 		<dependency>
@@ -102,8 +112,18 @@
 			<version>4.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		
 	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>alibabatech.com</id>
+			<url>http://code.alibabatech.com/mvn/releases</url>
+		</repository>
+		<repository>
+			<id>obullxl.github</id>
+			<url>http://obullxl.github.io/mvnrepo</url>
+		</repository>
+	</repositories>
 
 	<build>
 		<plugins>

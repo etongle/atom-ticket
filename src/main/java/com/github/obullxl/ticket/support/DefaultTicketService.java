@@ -10,7 +10,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.apache.commons.lang.Validate;
 
 import com.github.obullxl.ticket.TicketService;
-import com.github.obullxl.ticket.api.AtomicTicket;
+import com.github.obullxl.ticket.api.TicketRange;
 import com.github.obullxl.ticket.api.TicketDAO;
 import com.github.obullxl.ticket.api.TicketException;
 
@@ -28,7 +28,7 @@ public class DefaultTicketService implements TicketService {
 
     private TicketDAO             ticketDAO;
 
-    private volatile AtomicTicket currentTicket;
+    private volatile TicketRange currentTicket;
 
     /**
      * 初始化

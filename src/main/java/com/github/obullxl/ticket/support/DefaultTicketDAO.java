@@ -15,10 +15,10 @@ import javax.sql.DataSource;
 
 import org.apache.commons.lang.Validate;
 
-import com.github.obullxl.ticket.api.AtomicTicket;
+import com.github.obullxl.lang.utils.DBUtils;
+import com.github.obullxl.ticket.api.TicketRange;
 import com.github.obullxl.ticket.api.TicketDAO;
 import com.github.obullxl.ticket.api.TicketException;
-import com.github.obullxl.ticket.utils.DBUtils;
 
 /**
  * 票据DAO默认实现
@@ -75,7 +75,7 @@ public class DefaultTicketDAO implements TicketDAO {
     /**
      * @see com.github.obullxl.ticket.api.TicketDAO#nextRange(java.lang.String)
      */
-    public AtomicTicket nextRange(String name) throws TicketException {
+    public TicketRange nextRange(String name) throws TicketException {
         if (name == null) {
             throw new IllegalArgumentException("序列名称不能为空");
         }
@@ -116,9 +116,9 @@ public class DefaultTicketDAO implements TicketDAO {
             } catch (SQLException e) {
                 throw new TicketException(e);
             } finally {
-                DBUtils.closeResultSet(rs);
-                DBUtils.closeStatement(pstmt);
-                DBUtils.closeConnection(conn);
+                DBUtils.closeQuietly(rs);
+                DBUtils.closeQuietly(pstmt);
+                DBUtils.closeQuietly(conn);
             }
 
             try {
@@ -134,12 +134,12 @@ public class DefaultTicketDAO implements TicketDAO {
                     continue;
                 }
 
-                return new AtomicTicket(oldValue + 1, newValue);
+                return new TicketRange(oldValue + 1, newValue);
             } catch (SQLException e) {
                 throw new TicketException(e);
             } finally {
-                DBUtils.closeStatement(pstmt);
-                DBUtils.closeConnection(conn);
+                DBUtils.closeQuietly(pstmt);
+                DBUtils.closeQuietly(conn);
             }
         }
 

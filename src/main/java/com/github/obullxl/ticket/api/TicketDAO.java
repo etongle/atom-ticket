@@ -19,6 +19,6 @@ public interface TicketDAO {
      * @param name 序列名称
      * @return 返回下一个可用的序列区间
      */
-   public AtomicTicket nextRange(String name) throws TicketException;
+   public TicketRange nextRange(String name) throws TicketException;
 
 }
