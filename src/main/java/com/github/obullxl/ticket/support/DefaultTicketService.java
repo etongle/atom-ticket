@@ -21,12 +21,12 @@ import com.github.obullxl.ticket.api.TicketException;
  * @version $Id: DefaultTicketService.java, 2012-10-19 下午9:50:27 Exp $
  */
 public class DefaultTicketService implements TicketService {
-    private final Lock            lock = new ReentrantLock();
+    private final Lock           lock = new ReentrantLock();
 
     /** 序列名称 */
-    private String                name;
+    private String               name;
 
-    private TicketDAO             ticketDAO;
+    private TicketDAO            ticketDAO;
 
     private volatile TicketRange currentTicket;
 
@@ -36,6 +36,13 @@ public class DefaultTicketService implements TicketService {
     public void init() {
         Validate.notNull(this.name, "票据名称注入失败！");
         Validate.notNull(this.ticketDAO, "接口[TicketDAO]注入失败！");
+    }
+
+    /** 
+     * @see com.github.obullxl.ticket.TicketService#findName()
+     */
+    public String findName() {
+        return this.name;
     }
 
     /**

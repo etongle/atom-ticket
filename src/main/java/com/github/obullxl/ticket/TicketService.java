@@ -16,6 +16,11 @@ public interface TicketService {
     public static final String LOGGER = "TICKET-LOGGER";
 
     /**
+     * 获取票据名称
+     */
+    public String findName();
+
+    /**
      * 取得序列下一个值
      */
     public long nextValue() throws TicketException;
