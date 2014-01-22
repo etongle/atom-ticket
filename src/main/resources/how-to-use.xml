@@ -6,7 +6,7 @@
 	<!-- ===================================== -->
 	<bean id="parentTicket" abstract="true">
 		<property name="ticketDAO">
-			<bean class="com.github.obullxl.ticket.support.DefaultTicketDAO">
+			<bean class="com.github.obullxl.ticket.support.DefaultTicketDAO" init-method="init">
 				<property name="dataSource">
 					<bean class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
 						<property name="driverClassName" value="com.mysql.jdbc.Driver" />
