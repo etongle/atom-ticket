@@ -26,7 +26,7 @@ public class TicketUseWithSpringXML {
     public static void main(String[] args) throws Exception {
         ApplicationContext context = new ClassPathXmlApplicationContext("classpath:/how-to-use.xml");
         TicketService ticket = context.getBean(TicketService.class);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             System.out.println(ticket.nextValue());
         }
     }

@@ -34,11 +34,14 @@ public class TicketUserWithJavaCode {
             DefaultTicketDAO dao = new DefaultTicketDAO();
             dao.setDataSource(ds);
             dao.setRetryTimes(50);
-            dao.setStep(100);
             dao.setTableName("adm_mutex_ticket");
             dao.setNameColumnName("name");
+            dao.setVersionColumnName("version");
+            dao.setStepColumnName("step");
             dao.setValueColumnName("value");
-            dao.setStampColumnName("stamp");
+            dao.setMinvColumnName("minv");
+            dao.setMaxvColumnName("maxv");
+            dao.setCycleColumnName("cycle");
 
             DefaultTicketService service = new DefaultTicketService();
             service.setName("USER-INFO-ID");

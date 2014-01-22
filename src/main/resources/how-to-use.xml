@@ -18,12 +18,26 @@
 						<property name="maxActive" value="50" />
 					</bean>
 				</property>
+				<!-- 2.0.1 -->
+				<property name="retryTimes" value="10" />
+				<property name="tableName" value="adm_mutex_ticket" />
+				<property name="nameColumnName" value="name" />
+				<property name="versionColumnName" value="version" />
+				<property name="stepColumnName" value="step" />
+				<property name="valueColumnName" value="value" />
+				<property name="minvColumnName" value="minv" />
+				<property name="maxvColumnName" value="maxv" />
+				<property name="cycleColumnName" value="cycle" />
+				
+				<!-- 1.0.1 -->
+				<!--
 				<property name="retryTimes" value="50" />
 				<property name="step" value="100" />
 				<property name="tableName" value="adm_mutex_ticket" />
 				<property name="nameColumnName" value="name" />
 				<property name="valueColumnName" value="value" />
 				<property name="stampColumnName" value="stamp" />
+				-->
 			</bean>
 		</property>
 	</bean>

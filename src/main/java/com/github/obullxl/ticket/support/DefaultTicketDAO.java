@@ -13,12 +13,15 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.sql.DataSource;
 
+import org.apache.commons.lang.BooleanUtils;
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
 
 import com.github.obullxl.lang.utils.DBUtils;
-import com.github.obullxl.ticket.api.TicketRange;
+import com.github.obullxl.lang.utils.LogUtils;
 import com.github.obullxl.ticket.api.TicketDAO;
 import com.github.obullxl.ticket.api.TicketException;
+import com.github.obullxl.ticket.api.TicketRange;
 
 /**
  * 票据DAO默认实现
@@ -27,25 +30,25 @@ import com.github.obullxl.ticket.api.TicketException;
  * @version $Id: DefaultTicketDAO.java, 2012-10-19 下午9:56:05 Exp $
  */
 public class DefaultTicketDAO implements TicketDAO {
-    private static final int    MIN_STEP              = 1;
-    private static final int    MAX_STEP              = 100000;
-    private static final int    DEFAULT_STEP          = 1000;
-    private static final int    DEFAULT_RETRY_TIMES   = 150;
+    /** Logger */
+    private static final Logger logger                = LogUtils.get();
+
+    private static final int    DEFAULT_RETRY_TIMES   = 10;
 
     private static final String DEFAULT_TABLE_NAME    = "adm_mutex_ticket";
     private static final String DEFAULT_NAME_CN_NAME  = "name";
+    private static final String DEFAULT_VERN_CN_NAME  = "vern";
+    private static final String DEFAULT_STEP_CN_NAME  = "step";
     private static final String DEFAULT_VALUE_CN_NAME = "value";
-    private static final String DEFAULT_STAMP_CN_NAME = "stamp";
+    private static final String DEFAULT_MINV_CN_NAME  = "minv";
+    private static final String DEFAULT_MAXV_CN_NAME  = "maxv";
+    private static final String DEFAULT_CYCLE_CN_NAME = "cycle";
 
-    private static final long   DELTA                 = 100000000L;
-
+    /** 数据源 */
     private DataSource          dataSource;
 
     /** 重试次数 */
     private int                 retryTimes            = DEFAULT_RETRY_TIMES;
-
-    /** 步长 */
-    private int                 step                  = DEFAULT_STEP;
 
     /** 序列所在的表名 */
     private String              tableName             = DEFAULT_TABLE_NAME;
@@ -53,11 +56,25 @@ public class DefaultTicketDAO implements TicketDAO {
     /** 存储序列名称的列名 */
     private String              nameColumnName        = DEFAULT_NAME_CN_NAME;
 
+    /** 存储序列版本的列名 */
+    private String              versionColumnName     = DEFAULT_VERN_CN_NAME;
+
+    /** 存储序列步长的列名 */
+    private String              stepColumnName        = DEFAULT_STEP_CN_NAME;
+
     /** 存储序列值的列名 */
     private String              valueColumnName       = DEFAULT_VALUE_CN_NAME;
 
-    /** 存储序列最后更新时间的列名 */
-    private String              stampColumnName       = DEFAULT_STAMP_CN_NAME;
+    /** 存储序列最小值的列名 */
+    private String              minvColumnName        = DEFAULT_MINV_CN_NAME;
+
+    /** 存储序列最大值的列名 */
+    private String              maxvColumnName        = DEFAULT_MAXV_CN_NAME;
+
+    /** 存储序列是否转圈的列名 */
+    private String              cycleColumnName       = DEFAULT_CYCLE_CN_NAME;
+
+    // ~~~~~~~~~~~~~ 线程锁 ~~~~~~~~~~~~ //
 
     private final Lock          selectLock            = new ReentrantLock();
     private volatile String     selectSQL;
@@ -70,6 +87,12 @@ public class DefaultTicketDAO implements TicketDAO {
      */
     public void init() {
         Validate.notNull(this.dataSource, "数据源注入失败！");
+
+        this.selectSQL = this.findSelectSQL();
+        logger.warn("[统一编号]-SelectSQL: " + this.selectSQL);
+
+        this.updateSQL = this.findUpdateSQL();
+        logger.warn("[统一编号]-UpdateSQL: " + this.updateSQL);
     }
 
     /**
@@ -80,81 +103,126 @@ public class DefaultTicketDAO implements TicketDAO {
             throw new IllegalArgumentException("序列名称不能为空");
         }
 
-        long oldValue;
-        long newValue;
+        long oldValue; // 数据库值
+        long newValue; // 数据库需要更新的值
+        long startValue; // 序列开始数据值
 
         Connection conn = null;
         PreparedStatement pstmt = null;
+        PreparedStatement pstmt2 = null;
         ResultSet rs = null;
 
         for (int i = 0; i < this.retryTimes + 1; ++i) {
             try {
                 conn = this.dataSource.getConnection();
+
                 pstmt = conn.prepareStatement(this.findSelectSQL());
                 pstmt.setString(1, name);
                 rs = pstmt.executeQuery();
                 rs.next();
-                oldValue = rs.getLong(1);
 
+                long stepValue = rs.getLong(this.stepColumnName);
+                if (stepValue < 1) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Step value cannot be less than zero, step=").append(stepValue);
+                    message.append(", please check table ").append(this.tableName);
+                    throw new TicketException(message.toString());
+                }
+
+                long minValue = rs.getLong(this.minvColumnName);
+                if (minValue < 1) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Min value cannot be less than zero, min=").append(minValue);
+                    message.append(", please check table ").append(this.tableName);
+                    throw new TicketException(message.toString());
+                }
+
+                long maxValue = rs.getLong(this.maxvColumnName);
+                if (maxValue < 1) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Max value cannot be less than zero, max=").append(maxValue);
+                    message.append(", please check table ").append(this.tableName);
+                    throw new TicketException(message.toString());
+                }
+
+                if (minValue >= maxValue) {
+                    StringBuilder message = new StringBuilder();
+                    message.append("Max value must be greater than min value, max=").append(maxValue);
+                    message.append(", min=").append(minValue).append(", please check table ").append(this.tableName);
+                    throw new TicketException(message.toString());
+                }
+
+                oldValue = rs.getLong(this.valueColumnName);
+                startValue = oldValue;
                 if (oldValue < 0) {
                     StringBuilder message = new StringBuilder();
-                    message.append("Sequence value cannot be less than zero, value = ").append(oldValue);
+                    message.append("Sequence value cannot be less than zero, value=").append(oldValue);
                     message.append(", please check table ").append(this.tableName);
-
                     throw new TicketException(message.toString());
                 }
 
-                if (oldValue > Long.MAX_VALUE - DELTA) {
-                    StringBuilder message = new StringBuilder();
-                    message.append("Sequence value overflow, value = ").append(oldValue);
-                    message.append(", please check table ").append(this.tableName);
-
-                    throw new TicketException(message.toString());
+                // 转圈设置
+                boolean cycleFlag = BooleanUtils.toBoolean(rs.getString(this.cycleColumnName));
+                if (oldValue >= maxValue) {
+                    if (cycleFlag) {
+                        startValue = minValue - 1;
+                        newValue = minValue + stepValue;
+                    } else {
+                        StringBuilder message = new StringBuilder();
+                        message.append("Sequence value excude max value, value=").append(oldValue);
+                        message.append(", please check table ").append(this.tableName);
+                        throw new TicketException(message.toString());
+                    }
+                } else {
+                    newValue = oldValue + stepValue;
+                    if (newValue > maxValue) {
+                        newValue = maxValue;
+                    }
                 }
 
-                newValue = oldValue + this.step;
+                // 更新数据值
+                long versionValue = rs.getLong(this.versionColumnName);
+
+                pstmt2 = conn.prepareStatement(this.findUpdateSQL());
+                pstmt2.setLong(1, newValue);
+                pstmt2.setString(2, name);
+                pstmt2.setLong(3, versionValue);
+                pstmt2.setLong(4, oldValue);
+
+                int affectedRows = pstmt2.executeUpdate();
+                if (affectedRows == 0) {
+                    // 再次重试
+                    continue;
+                }
+
+                // 获取成功
+                return new TicketRange(startValue + 1, newValue);
             } catch (SQLException e) {
                 throw new TicketException(e);
             } finally {
                 DBUtils.closeQuietly(rs);
                 DBUtils.closeQuietly(pstmt);
-                DBUtils.closeQuietly(conn);
-            }
-
-            try {
-                conn = this.dataSource.getConnection();
-                pstmt = conn.prepareStatement(this.findUpdateSQL());
-                pstmt.setLong(1, newValue);
-                pstmt.setLong(2, System.currentTimeMillis());
-                pstmt.setString(3, name);
-                pstmt.setLong(4, oldValue);
-
-                int affectedRows = pstmt.executeUpdate();
-                if (affectedRows == 0) {
-                    continue;
-                }
-
-                return new TicketRange(oldValue + 1, newValue);
-            } catch (SQLException e) {
-                throw new TicketException(e);
-            } finally {
-                DBUtils.closeQuietly(pstmt);
+                DBUtils.closeQuietly(pstmt2);
                 DBUtils.closeQuietly(conn);
             }
         }
 
-        throw new TicketException("Retried too many times, retryTimes = " + retryTimes);
+        throw new TicketException("Retried too many times, retryTimes=" + retryTimes);
     }
 
+    /**
+     * SELECT查询SQL
+     * <p/>
+     * SELECT * FROM table WHERE name=?
+     */
     private String findSelectSQL() {
         if (this.selectSQL == null) {
             this.selectLock.lock();
             try {
                 if (this.selectSQL == null) {
                     StringBuilder buffer = new StringBuilder();
-                    buffer.append("select ").append(this.valueColumnName);
-                    buffer.append(" from ").append(this.tableName);
-                    buffer.append(" where ").append(this.nameColumnName).append(" = ?");
+                    buffer.append("SELECT * FROM ").append(this.tableName);
+                    buffer.append(" WHERE ").append(this.nameColumnName).append("=?");
 
                     this.selectSQL = buffer.toString();
                 }
@@ -166,17 +234,25 @@ public class DefaultTicketDAO implements TicketDAO {
         return this.selectSQL;
     }
 
+    /**
+     * UPDATE更新SQL
+     * <p/>
+     * UPDATE table SET value=?, version=version+1 WHERE name=? AND version=? AND value=?
+     */
     private String findUpdateSQL() {
         if (this.updateSQL == null) {
             this.updateLock.lock();
             try {
                 if (this.updateSQL == null) {
                     StringBuilder buffer = new StringBuilder();
-                    buffer.append("update ").append(this.tableName);
-                    buffer.append(" set ").append(this.valueColumnName).append(" = ?, ");
-                    buffer.append(this.stampColumnName).append(" = ? where ");
-                    buffer.append(this.nameColumnName).append(" = ? and ");
-                    buffer.append(this.valueColumnName).append(" = ?");
+                    buffer.append("UPDATE ").append(this.tableName);
+                    buffer.append(" SET ");
+                    buffer.append(this.valueColumnName).append("=?, ");
+                    buffer.append(this.versionColumnName).append("=").append(this.versionColumnName).append("+1");
+                    buffer.append(" WHERE ");
+                    buffer.append(this.nameColumnName).append("=? AND ");
+                    buffer.append(this.versionColumnName).append("=? AND ");
+                    buffer.append(this.valueColumnName).append("=?");
 
                     this.updateSQL = buffer.toString();
                 }
@@ -202,18 +278,6 @@ public class DefaultTicketDAO implements TicketDAO {
         this.retryTimes = retryTimes;
     }
 
-    public void setStep(int step) {
-        if (step < MIN_STEP || step > MAX_STEP) {
-            StringBuilder message = new StringBuilder();
-            message.append("Property step out of range [").append(MIN_STEP);
-            message.append(",").append(MAX_STEP).append("], step = ").append(step);
-
-            throw new IllegalArgumentException(message.toString());
-        }
-
-        this.step = step;
-    }
-
     public void setTableName(String tableName) {
         this.tableName = tableName;
     }
@@ -222,12 +286,28 @@ public class DefaultTicketDAO implements TicketDAO {
         this.nameColumnName = nameColumnName;
     }
 
+    public void setVersionColumnName(String versionColumnName) {
+        this.versionColumnName = versionColumnName;
+    }
+
+    public void setStepColumnName(String stepColumnName) {
+        this.stepColumnName = stepColumnName;
+    }
+
     public void setValueColumnName(String valueColumnName) {
         this.valueColumnName = valueColumnName;
     }
 
-    public void setStampColumnName(String stampColumnName) {
-        this.stampColumnName = stampColumnName;
+    public void setMinvColumnName(String minvColumnName) {
+        this.minvColumnName = minvColumnName;
+    }
+
+    public void setMaxvColumnName(String maxvColumnName) {
+        this.maxvColumnName = maxvColumnName;
+    }
+
+    public void setCycleColumnName(String cycleColumnName) {
+        this.cycleColumnName = cycleColumnName;
     }
 
 }
