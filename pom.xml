@@ -116,10 +116,6 @@
 
 	<repositories>
 		<repository>
-			<id>alibabatech.com</id>
-			<url>http://code.alibabatech.com/mvn/releases</url>
-		</repository>
-		<repository>
 			<id>obullxl.github</id>
 			<url>http://obullxl.github.io/mvnrepo</url>
 		</repository>
