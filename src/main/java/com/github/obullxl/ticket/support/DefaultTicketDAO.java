@@ -35,11 +35,11 @@ public class DefaultTicketDAO implements TicketDAO {
 
     private static final int    DEFAULT_RETRY_TIMES   = 10;
 
-    private static final String DEFAULT_TABLE_NAME    = "adm_mutex_ticket";
+    private static final String DEFAULT_TABLE_NAME    = "atom_ticket";
     private static final String DEFAULT_NAME_CN_NAME  = "name";
-    private static final String DEFAULT_VERN_CN_NAME  = "vern";
+    private static final String DEFAULT_VERN_CN_NAME  = "version";
     private static final String DEFAULT_STEP_CN_NAME  = "step";
-    private static final String DEFAULT_VALUE_CN_NAME = "value";
+    private static final String DEFAULT_VALUE_CN_NAME = "ticket";
     private static final String DEFAULT_MINV_CN_NAME  = "minv";
     private static final String DEFAULT_MAXV_CN_NAME  = "maxv";
     private static final String DEFAULT_CYCLE_CN_NAME = "cycle";

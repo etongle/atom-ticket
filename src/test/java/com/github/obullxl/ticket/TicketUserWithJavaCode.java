@@ -42,7 +42,8 @@ public class TicketUserWithJavaCode {
             dao.setMinvColumnName("minv");
             dao.setMaxvColumnName("maxv");
             dao.setCycleColumnName("cycle");
-
+            dao.init();
+            
             DefaultTicketService service = new DefaultTicketService();
             service.setName("USER-INFO-ID");
             service.setTicketDAO(dao);

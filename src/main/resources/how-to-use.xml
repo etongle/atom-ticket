@@ -15,7 +15,7 @@
 						<property name="password" value="mplat" />
 						<property name="minIdle" value="1" />
 						<property name="maxIdle" value="2" />
-						<property name="maxActive" value="50" />
+						<property name="maxActive" value="3" />
 					</bean>
 				</property>
 				<!-- 2.0.1 -->
