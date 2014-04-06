@@ -4,7 +4,7 @@
 	<groupId>com.github.obullxl</groupId>
 	<artifactId>atom-ticket</artifactId>
 	<packaging>jar</packaging>
-	<version>2.0.1</version>
+	<version>2.0.2</version>
 	<name>atom-ticket</name>
 	<description>atom-ticket</description>
 	<licenses>
@@ -33,7 +33,7 @@
 		<dependency>
 			<groupId>com.github.obullxl</groupId>
 			<artifactId>atom-lang</artifactId>
-			<version>1.0.3</version>
+			<version>2.0.8</version>
 			<scope>provided</scope>
 		</dependency>
 
@@ -145,24 +145,6 @@
 					<target>1.6</target>
 					<encoding>UTF-8</encoding>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.3</version>
-				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
-				</configuration>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>single</goal>
-						</goals>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

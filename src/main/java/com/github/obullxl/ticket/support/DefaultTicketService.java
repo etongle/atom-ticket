@@ -8,11 +8,13 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
 
+import com.github.obullxl.lang.utils.LogUtils;
 import com.github.obullxl.ticket.TicketService;
-import com.github.obullxl.ticket.api.TicketRange;
 import com.github.obullxl.ticket.api.TicketDAO;
 import com.github.obullxl.ticket.api.TicketException;
+import com.github.obullxl.ticket.api.TicketRange;
 
 /**
  * 票据默认实现
@@ -21,13 +23,21 @@ import com.github.obullxl.ticket.api.TicketException;
  * @version $Id: DefaultTicketService.java, 2012-10-19 下午9:50:27 Exp $
  */
 public class DefaultTicketService implements TicketService {
-    private final Lock           lock = new ReentrantLock();
+    private static final Logger  logger = LogUtils.get();
+
+    /** LOCK */
+    private final Lock           lock   = new ReentrantLock();
 
     /** 序列名称 */
     private String               name;
 
+    /** DAO */
     private TicketDAO            ticketDAO;
 
+    /** 初始化标志 */
+    private boolean              initTicket;
+
+    /** 序列 */
     private volatile TicketRange currentTicket;
 
     /**
@@ -36,6 +46,14 @@ public class DefaultTicketService implements TicketService {
     public void init() {
         Validate.notNull(this.name, "票据名称注入失败！");
         Validate.notNull(this.ticketDAO, "接口[TicketDAO]注入失败！");
+
+        if (this.initTicket) {
+            boolean init = this.ticketDAO.initTicket(this.name);
+            if (!init) {
+                String msg = "序列[" + this.name + "]初始化失败！";
+                logger.error(msg, new RuntimeException(msg));
+            }
+        }
     }
 
     /** 
@@ -88,12 +106,16 @@ public class DefaultTicketService implements TicketService {
 
     // ~~~~~~~~~~ getters and setters ~~~~~~~~~~~ //
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public void setTicketDAO(TicketDAO ticketDAO) {
         this.ticketDAO = ticketDAO;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setInitTicket(boolean initTicket) {
+        this.initTicket = initTicket;
     }
 
 }

@@ -95,6 +95,70 @@ public class DefaultTicketDAO implements TicketDAO {
         logger.warn("[统一编号]-UpdateSQL: " + this.updateSQL);
     }
 
+    /** 
+     * @see com.github.obullxl.ticket.api.TicketDAO#initTicket(java.lang.String)
+     * <br/>
+     * SQL: INSERT INTO atom_ticket VALUES ('TB-PUBLIC-ID', 5, 10, 1, 1, 9999999999, 'TRUE');
+     */
+    public boolean initTicket(String name) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("INSERT INTO ").append(this.tableName).append("(");
+        sql.append(this.nameColumnName);
+        sql.append(",").append(this.versionColumnName);
+        sql.append(",").append(this.stepColumnName);
+        sql.append(",").append(this.valueColumnName);
+        sql.append(",").append(this.minvColumnName);
+        sql.append(",").append(this.maxvColumnName);
+        sql.append(",").append(this.cycleColumnName);
+        sql.append(") VALUES(?, ?, ?, ?, ?, ?, ?)");
+
+        logger.warn("[统一编号]-票据[{}]初始化SQL: {}", name, sql.toString());
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        PreparedStatement pstmt2 = null;
+        ResultSet rs = null;
+        for (int i = 0; i < 3; i++) {
+            try {
+                conn = this.dataSource.getConnection();
+
+                pstmt = conn.prepareStatement(this.findSelectSQL());
+                pstmt.setString(1, name);
+                rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    // 已经存在
+                    logger.warn("[统一编号]-票据[{}]已经存在，无需初始化！", name);
+                    return true;
+                }
+
+                // 不存在则初始化
+                pstmt2 = conn.prepareStatement(sql.toString());
+                pstmt2.setString(1, name);
+                pstmt2.setLong(2, 1);
+                pstmt2.setLong(3, 10);
+                pstmt2.setLong(4, 1);
+                pstmt2.setLong(5, 1);
+                pstmt2.setLong(6, 9999999999L);
+                pstmt2.setString(7, "TRUE");
+
+                int count = pstmt2.executeUpdate();
+                logger.warn("[统一编号]-票据[{}]初始化完成[{}].", name, count);
+
+                return true;
+            } catch (Exception e) {
+                logger.error("[统一编号]-票据[{}]初始化异常！", name, e);
+            } finally {
+                DBUtils.closeQuietly(rs);
+                DBUtils.closeQuietly(pstmt);
+                DBUtils.closeQuietly(pstmt2);
+                DBUtils.closeQuietly(conn);
+            }
+        }
+
+        // 重试均失败
+        return false;
+    }
+
     /**
      * @see com.github.obullxl.ticket.api.TicketDAO#nextRange(java.lang.String)
      */

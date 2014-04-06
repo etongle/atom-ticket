@@ -1,1 +1,1 @@
-mvn eclipse:clean eclipse:eclipse
+mvn eclipse:clean eclipse:eclipse -gs ./mvn.xml

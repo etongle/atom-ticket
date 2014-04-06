@@ -14,6 +14,11 @@ package com.github.obullxl.ticket.api;
 public interface TicketDAO {
 
     /**
+     * 初始化序列记录
+     */
+    public boolean initTicket(String name);
+    
+    /**
      * 取得下一个可用的序列区间
      *
      * @param name 序列名称
