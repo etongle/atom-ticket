@@ -71,7 +71,7 @@ public class DefaultTicketService implements TicketService {
             this.lock.lock();
             try {
                 if (this.currentTicket == null) {
-                    this.currentTicket = ticketDAO.nextRange(name);
+                    this.currentTicket = this.ticketDAO.nextRange(name);
                 }
             } finally {
                 this.lock.unlock();
@@ -102,6 +102,22 @@ public class DefaultTicketService implements TicketService {
         }
 
         return value;
+    }
+
+    /** 
+     * @see com.github.obullxl.ticket.TicketService#nextValues(int)
+     */
+    public long[] nextValues(int count) throws TicketException {
+        count = Math.max(count, 1);
+        count = Math.min(count, 1000);
+
+        long[] result = new long[count];
+
+        for (int i = 0; i < count; i++) {
+            result[i] = this.nextValue();
+        }
+
+        return result;
     }
 
     // ~~~~~~~~~~ getters and setters ~~~~~~~~~~~ //

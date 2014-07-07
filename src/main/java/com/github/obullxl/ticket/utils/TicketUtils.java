@@ -23,7 +23,7 @@ public class TicketUtils {
     /**
      * 初始化
      */
-    public void init() throws TicketException {
+    public void init() {
         tickets.clear();
     }
 
@@ -40,17 +40,26 @@ public class TicketUtils {
     public static void regist(String name, TicketService service) {
         tickets.put(name, service);
     }
+    
+    /**
+     * 获取票据服务
+     */
+    public static TicketService fetch(String name) {
+        return tickets.get(name);
+    }
 
     /**
-     * 获取票据值
+     * 获取一个票据值
      */
     public static long nextValue(String name) throws TicketException {
-        TicketService service = tickets.get(name);
-        if (service == null) {
-            throw new TicketException("票据KEY[" + name + "]不存在!");
-        }
-
-        return service.nextValue();
+        return fetch(name).nextValue();
+    }
+    
+    /**
+     * 获取一组票据值
+     */
+    public static long[] nextValues(String name, int count) throws TicketException {
+        return fetch(name).nextValues(count);
     }
 
 }

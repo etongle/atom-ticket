@@ -24,5 +24,12 @@ public interface TicketService {
      * 取得序列下一个值
      */
     public long nextValue() throws TicketException;
+    
+    /**
+     * 取得序列下一组值
+     * 
+     * @param count 序列个数，最小为1，最大为1000
+     */
+    public long[] nextValues(int count) throws TicketException;
 
 }
